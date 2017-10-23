@@ -1,0 +1,8 @@
+[package]
+name = "snake"
+version = "0.1.0"
+authors = ["cyrill"]
+
+[dependencies]
+rand = "0.3.14"
+pancurses = "0.11"
