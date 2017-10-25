@@ -109,7 +109,7 @@ fn highscore(h: usize, w: &pancurses::Window) {
 fn menu(w: &pancurses::Window) -> std::option::Option<pancurses::Input> {
     w.clear();
     w.attrset(pancurses::COLOR_PAIR(EMPTY_COLOR_ID as u32));
-    w.addstr("Welcome to sanke-rs!\n");
+    w.addstr("Welcome to snake-rs!\n");
     w.addstr("What to do?\np\tplay\nq\tquit\n");
     w.getch()
 }
