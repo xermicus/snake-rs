@@ -63,8 +63,8 @@ fn render(s: &State, w: &pancurses::Window) {
     w.clear();
 
     w.attrset(pancurses::COLOR_PAIR(EMPTY_COLOR_ID as u32));
-    for e in &s.wall {
-        w.mvaddch(e.0, e.1, O_WALL);
+    for &(x, y) in &s.wall {
+        w.mvaddch(x, y, O_WALL);
     }
 
     w.attrset(pancurses::COLOR_PAIR(SNAKE_COLOR_ID as u32));
