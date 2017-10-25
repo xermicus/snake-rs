@@ -201,9 +201,9 @@ fn main() {
     pancurses::endwin();
     if let Err(e) = result {
         if let Some(e) = e.downcast_ref::<&'static str>() {
-            writeln!(&mut std::io::stderr(), "Error: {}", e).unwrap();
+            eprintln!("Error: {}", e);
         } else {
-            writeln!(&mut std::io::stderr(), "Unknown error: {:?}", e).unwrap();
+            eprintln!("Unknown error: {:?}", e);
         }
         std::process::exit(1);
     }
