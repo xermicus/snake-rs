@@ -5,6 +5,7 @@ use rand::Rng;
 use std::{thread, time};
 use std::io::Write;
 use pancurses::Input::*;
+use std::collections::HashSet;
 use std::net::{TcpListener, TcpStream};
 
 const DIM_X: usize = 42;
@@ -25,8 +26,8 @@ struct State {
     snake: Vec<(i32, i32)>,
     dir: (i32, i32),
     vel: i32,
-    apple: Vec<(i32, i32)>,
-    wall: Vec<(i32, i32)>
+    apple: HashSet<(i32, i32)>,
+    wall: HashSet<(i32, i32)>
 }
 
 
@@ -35,14 +36,16 @@ fn init() -> State {
         snake: vec![get_rand_tuple()],
         dir: (1,0),
         vel: 4,
-        apple: vec![get_rand_tuple()],
-        wall: Vec::new()
+        apple: HashSet::new(),
+        wall: HashSet::new()
     };
+
+    state.apple.insert(get_rand_tuple());
 
     for x in 0..(DIM_Y) {
         for y in 0..(DIM_X) {
             if x==0 || x==DIM_Y-1 || y==0 || y==DIM_X-1 {
-                state.wall.push((x as i32, y as i32));
+                state.wall.insert((x as i32, y as i32));
             }
         }
     }
@@ -60,8 +63,8 @@ fn render(s: &State, w: &pancurses::Window) {
     w.clear();
 
     w.attrset(pancurses::COLOR_PAIR(EMPTY_COLOR_ID as u32));
-    for e in &s.wall {
-        w.mvaddch(e.0, e.1, O_WALL);
+    for &(x, y) in &s.wall {
+        w.mvaddch(x, y, O_WALL);
     }
 
     w.attrset(pancurses::COLOR_PAIR(SNAKE_COLOR_ID as u32));
@@ -106,7 +109,7 @@ fn highscore(h: usize, w: &pancurses::Window) {
 fn menu(w: &pancurses::Window) -> std::option::Option<pancurses::Input> {
     w.clear();
     w.attrset(pancurses::COLOR_PAIR(EMPTY_COLOR_ID as u32));
-    w.addstr("Welcome to sanke-rs!\n");
+    w.addstr("Welcome to snake-rs!\n");
     w.addstr("What to do?\np\tplay\nq\tquit\n");
     w.getch()
 }
@@ -153,9 +156,8 @@ fn update(mut s: &mut State, w: &pancurses::Window) -> bool {
     }
 
     // check apple
-    if let Some(index) = s.apple.iter().position(|&r| r == next) {
-        s.apple.remove(index);   
-        s.apple.push(get_rand_tuple());
+    if s.apple.remove(&next) {
+        s.apple.insert(get_rand_tuple());
         s.vel += 1;
     } else {
         s.snake.pop();
@@ -199,9 +201,9 @@ fn main() {
     pancurses::endwin();
     if let Err(e) = result {
         if let Some(e) = e.downcast_ref::<&'static str>() {
-            writeln!(&mut std::io::stderr(), "Error: {}", e).unwrap();
+            eprintln!("Error: {}", e);
         } else {
-            writeln!(&mut std::io::stderr(), "Unknown error: {:?}", e).unwrap();
+            eprintln!("Unknown error: {:?}", e);
         }
         std::process::exit(1);
     }
