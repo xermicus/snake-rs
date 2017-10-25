@@ -5,6 +5,7 @@ use rand::Rng;
 use std::{thread, time};
 use std::io::Write;
 use pancurses::Input::*;
+use std::net::{TcpListener, TcpStream};
 
 const DIM_X: usize = 42;
 const DIM_Y: usize = 22;
@@ -102,6 +103,15 @@ fn highscore(h: usize, w: &pancurses::Window) {
 }
 
 
+fn menu(w: &pancurses::Window) -> std::option::Option<pancurses::Input> {
+    w.clear();
+    w.attrset(pancurses::COLOR_PAIR(EMPTY_COLOR_ID as u32));
+    w.addstr("Welcome to sanke-rs!\n");
+    w.addstr("What to do?\np\tplay\nq\tquit\n");
+    w.getch()
+}
+
+
 fn input(s: &mut State, input: pancurses::Input) {
     s.dir = match input {
         KeyUp    => (-1, 0),
@@ -167,16 +177,23 @@ fn main() {
         pancurses::nl();
         pancurses::noecho();
         pancurses::curs_set(0);
-        window.nodelay(true);
+        window.nodelay(false);
         window.keypad(true);
     
-        let mut game_state = init();
-
-        while update(&mut game_state, &window) {
-            render(&game_state, &window);
+        loop {
+            match menu(&window) {
+            Some(Character('p')) => {
+                window.nodelay(true);
+                let mut game_state = init();
+                while update(&mut game_state, &window) {
+                    render(&game_state, &window);
+                }
+                highscore(game_state.snake.len(), &window);
+                window.nodelay(false); },
+            Some(Character('q')) => break,
+            _ => continue
+            }
         }
-        
-        highscore(game_state.snake.len(), &window);
     });
 
     pancurses::endwin();
