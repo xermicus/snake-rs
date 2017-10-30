@@ -3,7 +3,6 @@ extern crate pancurses;
 
 use rand::Rng;
 use std::{thread, time};
-use std::io::Write;
 use pancurses::Input::*;
 use std::collections::HashSet;
 use std::net::{TcpListener, TcpStream};
@@ -68,13 +67,13 @@ fn render(s: &State, w: &pancurses::Window) {
     }
 
     w.attrset(pancurses::COLOR_PAIR(SNAKE_COLOR_ID as u32));
-    for e in &s.snake {
-        w.mvaddch(e.0, e.1, O_SNAKE);
+    for &(x, y) in &s.snake {
+        w.mvaddch(x, y, O_SNAKE);
     }
 
     w.attrset(pancurses::COLOR_PAIR(APPLE_COLOR_ID as u32));
-    for e in &s.apple {
-        w.mvaddch(e.0, e.1, O_APPLE);
+    for &(x, y) in &s.apple {
+        w.mvaddch(x, y, O_APPLE);
     }
 
     w.attrset(pancurses::COLOR_PAIR(EMPTY_COLOR_ID as u32));
@@ -110,7 +109,7 @@ fn menu(w: &pancurses::Window) -> std::option::Option<pancurses::Input> {
     w.clear();
     w.attrset(pancurses::COLOR_PAIR(EMPTY_COLOR_ID as u32));
     w.addstr("Welcome to snake-rs!\n");
-    w.addstr("What to do?\np\tplay\nq\tquit\n");
+    w.addstr("What to do?\np\tplay\nq\tquit\nh\thost a multiplayer session\nj\tjoin a multiplayer session\n");
     w.getch()
 }
 
@@ -153,10 +152,7 @@ fn update(mut s: &mut State, w: &pancurses::Window) -> bool {
     // check collision
     if s.snake.contains(&next) {
         return false
-    }
-
-    // check apple
-    if s.apple.remove(&next) {
+    } else if s.apple.remove(&next) {
         s.apple.insert(get_rand_tuple());
         s.vel += 1;
     } else {
@@ -193,6 +189,8 @@ fn main() {
                 highscore(game_state.snake.len(), &window);
                 window.nodelay(false); },
             Some(Character('q')) => break,
+            Some(Character('h')) => continue, // TODO
+            Some(Character('j')) => continue, // TODO
             _ => continue
             }
         }
